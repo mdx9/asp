@@ -1,0 +1,36 @@
+digraph arch {
+  rankdir=TB; bgcolor="white"; compound=true; nodesep=0.40; ranksep=0.50;
+  node [shape=box, style="filled,rounded", fontname="DejaVu Sans", fontsize=12,
+        fillcolor="#eef3ee", color="#33553a", penwidth=1.3, margin="0.18,0.11"];
+  edge [fontname="DejaVu Sans", fontsize=11, color="#52514e", penwidth=1.1];
+
+  subgraph cluster_a {
+    label="а) штатный механизм: централизованный опрос состояния узла";
+    fontname="DejaVu Sans"; fontsize=13; color="#c3c2b7"; penwidth=1.2; margin=18; labeljust="l";
+    A1 [label="узел обработки 1\n(агент состояния)"];
+    A2 [label="узел обработки 2\n(агент состояния)"];
+    AC [label="центральный компонент управления", fillcolor="#f5e3e0"];
+    AT [label="таблица распределения трафика", fillcolor="#d8e8d8"];
+    {rank=same; A1; A2;}
+    A1 -> A2 [style=invis];
+    A1 -> AC [label=" состояние, 10 с "];
+    A2 -> AC [label=" состояние, 10 с "];
+    AC -> AT [label=<  признание отказа 40 с, вытеснение 300 с  >];
+  }
+
+  subgraph cluster_b {
+    label="б) предлагаемый метод: одноранговый контроль на пути трафика";
+    fontname="DejaVu Sans"; fontsize=13; color="#c3c2b7"; penwidth=1.2; margin=18; labeljust="l";
+    BD [label="детектор отказа (узел-отправитель)", fillcolor="#f5e3e0"];
+    BE1 [label="экземпляр\nсетевой функции 1"];
+    BE2 [label="экземпляр\nсетевой функции 2"];
+    BT [label="таблица\nраспределения трафика", fillcolor="#d8e8d8"];
+    BP [label="платформа оркестрации:\nпереразмещение", style="filled,rounded,dashed", fillcolor="#f3eede"];
+    {rank=same; BE1; BE2; BT; BP;}
+    BD -> BE1 [dir=both, label=<контрольные<BR/>сообщения, τ  >];
+    BD -> BE2 [dir=both];
+    BD -> BT [label=<  перенаправление, T<SUB>р</SUB>  >];
+    BD -> BP [style=dashed, label=<  уведомление<BR/>  (вне критического пути)>];
+  }
+  AT -> BD [style=invis];
+}
