@@ -1,0 +1,18 @@
+digraph states {
+  rankdir=LR;
+  bgcolor="white";
+  node [shape=ellipse, fixedsize=false, fontname="DejaVu Sans", fontsize=12, style=filled, fillcolor="#eef3ee", color="#33553a", penwidth=1.4, margin="0.14,0.09"];
+  edge [fontname="DejaVu Sans", fontsize=13, color="#33553a", penwidth=1.2];
+
+  S0 [label="S₀\nобслуживание\nпредоставляется", fillcolor="#d8e8d8", penwidth=2.0];
+  S1 [label="S₁\nотказ произошёл,\nне обнаружен", fillcolor="#f5e3e0"];
+  S2 [label="S₂\nвосстановление\nпосле отказа"];
+  S3 [label="S₃\nвосстановление после\nложного признания", fillcolor="#f3eede"];
+
+  S0 -> S1 [label="  λ  "];
+  S1 -> S2 [label="  μо  "];
+  S2 -> S0 [label="  μп  "];
+  S0 -> S3 [label="  ν  "];
+  S3 -> S0 [label="  1/cν  "];
+  { rank=same; S1; S3; }
+}
