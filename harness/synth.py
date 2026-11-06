@@ -88,10 +88,10 @@ for name, mech, tau, k in scenarios:
     })
 
 # Штатный механизм. Время обнаружения порождается по соотношению (2.7)
-# раздела 2.5: T_о = 40 − U(0;10) + U(0;5), диапазон 30–45 с, среднее 37,5 с.
+# раздела 1.3: T_о = 50 − U(0;10) + U(0;5), диапазон 40–55 с, среднее 47,5 с (версия 1.32+).
 # Несогласованность моментов отказа, передачи сведений о состоянии (10 с) и
 # проверки их контроллером (5 с). Вытеснение экземпляров — через 300 с.
-std_det = [40.0 - random.uniform(0, 10) + random.uniform(0, 5) for _ in range(N_REP)]
+std_det = [50.0 - random.uniform(0, 10) + random.uniform(0, 5) for _ in range(N_REP)]
 std_tr = [x / 1000 for x in lognormalish(*TR_PLATFORM_MS)]
 std_full = [a + 300 + b for a, b in zip(std_det, std_tr)]
 table36.append({
