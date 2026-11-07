@@ -1,0 +1,42 @@
+// Рисунок 1.1 — соответствие блоков эталонной архитектуры [15] и контейнерной реализации [16] (раздел 1.1).
+// Сборка: dot -Tpng -Gdpi=200 1_1_nfv_arch.dot -o 1_1_nfv_arch.png
+digraph nfv {
+  rankdir=TB; bgcolor="white"; nodesep=1.4; ranksep=0.30; newrank=true;
+  node [shape=box, style="filled,rounded", fontname="DejaVu Sans", fontsize=12,
+        color="#52514e", penwidth=1.2, margin="0.20,0.12", width=3.6];
+  edge [fontname="DejaVu Sans", fontsize=10, color="#52514e", penwidth=1.2, arrowsize=0.7];
+
+  subgraph cluster_ref {
+    label="эталонная архитектура виртуализации [15]"; labeljust="l";
+    fontname="DejaVu Sans"; fontsize=13; color="#c3c2b7"; margin=16;
+    NFVO [label="оркестратор\nсетевых функций", fillcolor="#dbe8f8"];
+    VNFM [label="менеджер\nсетевых функций", fillcolor="#dbe8f8"];
+    VIM  [label="менеджер виртуализованной\nинфраструктуры", fillcolor="#dbe8f8"];
+    VNF  [label="виртуализированная\nсетевая функция (виртуальные машины)", fillcolor="#dbe8f8"];
+    NFVI [label="инфраструктура виртуализации\n(гипервизор, вычисления, сеть)", fillcolor="#dbe8f8"];
+    GAP  [label="нет соответствующего блока", style="rounded,dashed", color="#c3c2b7", fontcolor="#8a8984", fillcolor="white"];
+    NFVO -> VNFM -> VIM -> GAP -> VNF -> NFVI [style=invis];
+  }
+  subgraph cluster_cnt {
+    label="контейнерная реализация [16]"; labeljust="l";
+    fontname="DejaVu Sans"; fontsize=13; color="#c3c2b7"; margin=16;
+    NFVO2 [label="оркестратор\nсетевых функций", fillcolor="#fbe1d6"];
+    VNFM2 [label="менеджер\nсетевых функций", fillcolor="#fbe1d6"];
+    CISM [label="управление службой\nконтейнерной инфраструктуры", fillcolor="#fbe1d6"];
+    MO   [label="управляемые объекты: требуемое\nи фактическое состояние нагрузки", fillcolor="#fdf0c8", style="filled,rounded,dashed"];
+    CNF  [label="совокупность экземпляров\nв контейнерах", fillcolor="#fbe1d6"];
+    CIS  [label="служба контейнерной инфраструктуры\n(среда исполнения)", fillcolor="#fbe1d6"];
+    NFVO2 -> VNFM2 -> CISM -> MO -> CNF -> CIS [style=invis];
+  }
+  {rank=same; NFVO; NFVO2;}
+  {rank=same; VNFM; VNFM2;}
+  {rank=same; VIM; CISM;}
+  {rank=same; GAP; MO;}
+  {rank=same; VNF; CNF;}
+  {rank=same; NFVI; CIS;}
+  NFVO -> NFVO2 [label="сохраняется"];
+  VNFM -> VNFM2 [label="сохраняется"];
+  VIM  -> CISM  [label="заменяется; принимает\nи часть функций оркестрации"];
+  VNF  -> CNF   [label="заменяется"];
+  NFVI -> CIS   [label="заменяется"];
+}

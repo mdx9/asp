@@ -88,10 +88,10 @@ for name, mech, tau, k in scenarios:
     })
 
 # Штатный механизм. Время обнаружения порождается по соотношению (2.7)
-# раздела 2.5: T_о = 40 − U(0;10) + U(0;5), диапазон 30–45 с, среднее 37,5 с.
+# раздела 1.3: T_о = 50 − U(0;10) + U(0;5), диапазон 40–55 с, среднее 47,5 с (версия 1.32+).
 # Несогласованность моментов отказа, передачи сведений о состоянии (10 с) и
 # проверки их контроллером (5 с). Вытеснение экземпляров — через 300 с.
-std_det = [40.0 - random.uniform(0, 10) + random.uniform(0, 5) for _ in range(N_REP)]
+std_det = [50.0 - random.uniform(0, 10) + random.uniform(0, 5) for _ in range(N_REP)]
 std_tr = [x / 1000 for x in lognormalish(*TR_PLATFORM_MS)]
 std_full = [a + 300 + b for a, b in zip(std_det, std_tr)]
 table36.append({
@@ -161,7 +161,9 @@ _ln = [math.log(r["nu_meas_s"]) for r in table37 if r["n_fp"] > 0]
 _n = len(_lp)
 _mx, _my = sum(_lp) / _n, sum(_ln) / _n
 SLOPE = sum((x - _mx) * (y - _my) for x, y in zip(_lp, _ln)) / sum((x - _mx) ** 2 for x in _lp)
-NU_OPER = (1 - P_LOSS) * (P_LOSS ** K) / (TAU_MS / 1000.0) * Y_SEC  # экстраполяция на p=0,01
+NU_OPER = (1 - P_LOSS) * (P_LOSS ** K) / (TAU_MS / 1000.0) * Y_SEC  # расчёт по (3.18) при p=0,01
+# экстраполяция подобранной прямой ln ν = a + SLOPE·ln p на p = 0,01 (раздел 3.5)
+NU_EXTRAP = math.exp(_my + SLOPE * (math.log(P_LOSS) - _mx)) * Y_SEC
 
 # ---------- Э3, часть 4: реализуемый период, естественная вероятность потери,
 # ---------- служебная нагрузка ----------
@@ -220,7 +222,7 @@ if __name__ == "__main__":
         print(f"| {fmt(r['p']*100,0)} | {_h} | {r['n_fp']} | "
               f"{fmt(r['nu_meas_h'],2)} | {fmt(r['nu_calc_h'],2)} |")
     print(f"\nпоказатель степени по наклону ln ν(ln p): {fmt(SLOPE,2)} при k = {K}")
-    print(f"экстраполяция на эксплуатационное p = 0,01: ν = {fmt(NU_OPER,2)} 1/год")
+    print(f"p = 0,01: экстраполяция прямой ν = {fmt(NU_EXTRAP,3)} 1/год, расчёт по (3.18) ν = {fmt(NU_OPER,3)} 1/год")
 
     print("\n--- Э3, часть 4: реализуемый период, вероятность потери, нагрузка ---")
     print(f"  наименьший реализуемый период: {fmt(TAU_MIN,2)} ± {fmt(TAU_MIN_CI,2)} мс; "

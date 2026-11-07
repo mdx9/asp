@@ -39,7 +39,8 @@ def preprocess(md: str) -> tuple[str, dict]:
     def eq(m):
         body, num = m.group(1), m.group(2)
         stats["формул"] += 1
-        return f"$$\n{body.strip()}\n$$" + div(EQ_STYLE, f"({num})")
+        # «\(» — иначе номер вида (1) pandoc примет за маркер нумерованного списка
+        return f"$$\n{body.strip()}\n$$" + div(EQ_STYLE, f"\\({num})")
 
     # $$ ... \tag{3.N} $$  ->  формула + абзац с номером
     md = re.sub(r"\$\$(.*?)\\tag\{([^}]+)\}\s*\$\$", eq, md, flags=re.S)
