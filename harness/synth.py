@@ -243,8 +243,9 @@ if __name__ == "__main__":
     inside = sum(1 for x in all_d if (K-1)*TAU_MS <= x <= K*TAU_MS)
     print(f"  в границах модели {inside} из {len(all_d)}")
 
-    with open("synth_data.json", "w", encoding="utf-8") as f:
+    import pathlib
+    with open(pathlib.Path(__file__).with_name("synth_data.json"), "w", encoding="utf-8") as f:
         json.dump({"seed": SEED, "warning": "СИНТЕТИЧЕСКИЕ ДАННЫЕ, НЕ ИЗМЕРЕНИЯ",
                    "t35": table35, "t36": table36, "t37": table37}, f,
                   ensure_ascii=False, indent=1)
-    print("\nсохранено в synth_data.json")
+    print("\nсохранено в harness/synth_data.json (не хранится в git)")

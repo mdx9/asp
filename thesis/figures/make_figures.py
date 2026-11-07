@@ -1,6 +1,6 @@
 """Рисунки 1.2, 2.2–2.6, 3.2, 3.3, 3.5, 3.6, 3.7 (рисунок 1.1 — 1_1_nfv_arch.dot, graphviz).
 
-Запуск из корня репозитория: python3 figures/make_figures.py
+Запуск из корня репозитория: python3 thesis/figures/make_figures.py
 Палитра — категориальная, проверена validate_palette.js (синий, оранжевый, бирюзовый,
 жёлтый, розовый); серии различаются также типом линии, маркером или штриховкой.
 Данные: 1.2, 3.5 — параметры платформы (таблица 1.3, (1.3)); 2.3 — (3.17) при k = 5,
@@ -19,8 +19,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 from matplotlib.ticker import FuncFormatter
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT = ROOT / "figures"
+ROOT = pathlib.Path(__file__).resolve().parents[2]   # корень репозитория
+OUT = pathlib.Path(__file__).resolve().parent
 C = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"]
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10, "axes.edgecolor": INK2,

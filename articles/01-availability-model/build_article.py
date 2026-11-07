@@ -5,7 +5,7 @@
 1) Подготовка текста: alt у рисунков убирается (подпись — курсивная строка под
    рисунком, иначе pandoc дублирует её); τ_min, ν_max, ν_Г → нижние индексы;
    ^(…) и ^k → верхние индексы.
-2) build-docx.py: номера формул выносятся в абзацы «Формула-номер».
+2) tools/build-docx.py: номера формул выносятся в абзацы «Формула-номер».
 3) Формула и номер сводятся в таблицу без рамок: формула по центру, номер справа.
 4) Таблицам с данными — рамки и шрифт 11; рисунки — по центру, не шире 15 см.
 """
@@ -40,7 +40,7 @@ def prepare(md: str) -> str:
 tmp = here / "_build.md"
 tmp.write_text(prepare((here / "article.md").read_text(encoding="utf-8")), encoding="utf-8")
 try:
-    subprocess.run([sys.executable, str(here.parent.parent / "build-docx.py"), str(tmp),
+    subprocess.run([sys.executable, str(here.parent.parent / "tools" / "build-docx.py"), str(tmp),
                     "-o", str(out), "--reference", str(here / "reference.docx")], check=True)
 finally:
     tmp.unlink(missing_ok=True)
