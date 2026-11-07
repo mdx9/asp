@@ -1,4 +1,4 @@
-"""Рисунки 1.2, 2.2, 2.3, 2.4, 2.5, 2.6, 3.2, 3.5 (рисунок 1.1 — 1_1_nfv_arch.dot, graphviz).
+"""Рисунки 1.2, 2.2, 2.3, 2.4, 2.5, 2.6, 3.2, 3.3, 3.5 (рисунок 1.1 — 1_1_nfv_arch.dot, graphviz).
 
 Запуск из корня репозитория: python3 figures/make_figures.py
 Палитра — категориальная, проверена validate_palette.js (синий, оранжевый, бирюзовый,
@@ -346,7 +346,50 @@ def fig_3_5():
     plt.close(fig)
 
 
+# ---------------------------------------------------------------- 3.3
+def fig_3_3():
+    YEAR = 365.25 * 86400
+    lam, p, c, Tr, tmin = 1 / YEAR, 0.01, 1.0, 1.0, 0.010
+    ramp = {2: "#b7d3f6", 3: "#86b6ef", 4: "#5598e7", 5: "#2a78d6", 6: "#184f95"}
+    To = [10 ** (-2.5 + 5 * i / 500) for i in range(501)]
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.axhline(315.4, color="#6b6a66", lw=1.6, ls=(0, (6, 3)))
+    ax.text(4e-3, 360, "бюджет 99,999 % — 315,4 с/год", color="#6b6a66", fontsize=10)
+    ax.axhline(1.0, color="#6b6a66", lw=0.8, ls=":")
+    ax.text(230, 1.08, "предел λ$T_р$ = 1 с/год", color="#6b6a66", fontsize=9, ha="right")
+    for k in range(2, 7):
+        Ck = (1 - p) * (k - 0.5) * p ** k
+        y = [(lam * (t + Tr) + Ck / t * c) * YEAR for t in To]
+        ax.plot(To, y, color=ramp[k], lw=2.4)
+        t_opt = math.sqrt(Ck * c / lam)
+        y_opt = (lam * (t_opt + Tr) + Ck / t_opt * c) * YEAR
+        ok = t_opt / (k - 0.5) >= tmin
+        ax.plot(t_opt, y_opt, "o" if ok else "x", color=ramp[k], ms=9 if ok else 9,
+                mec="white" if ok else ramp[k], mew=1.5 if ok else 2.5, zorder=4)
+    lab = {2: (90, 230), 3: (11, 36), 4: (1.2, 6.5), 5: (0.2, 2.2), 6: (3.4e-3, 2.8)}
+    for k, (x, y) in lab.items():
+        ax.text(x, y, f"$k$ = {k}", color=ramp[k], fontsize=12, fontweight="bold")
+    t6 = 5.5 * tmin
+    C6 = (1 - p) * 5.5 * p ** 6
+    y6 = (lam * (t6 + Tr) + C6 / t6 * c) * YEAR
+    ax.plot(t6, y6, "s", color=C[1], ms=10, zorder=5)
+    ax.annotate("$k$ = 6, τ = τ$_{min}$ = 10 мс:\n$T_о$ = 55 мс, простой 1,06 с/год", xy=(t6, y6 * 1.08),
+                xytext=(7e-3, 18), color=C[1], fontsize=11, fontweight="bold",
+                arrowprops=dict(arrowstyle="->", color=C[1], lw=1.2, connectionstyle="arc3,rad=0.15"))
+    ax.plot([], [], "o", color="#6b6a66", label="внутренний оптимум (3.22) реализуем")
+    ax.plot([], [], "x", color="#6b6a66", mew=2.5, label="внутренний оптимум требует τ < τ$_{min}$")
+    ax.plot([], [], "s", color=C[1], label="совместный оптимум: граница τ = τ$_{min}$")
+    ax.legend(loc="upper right", fontsize=10)
+    ax.set_xscale("log"); ax.set_yscale("log")
+    ax.set_xlim(10 ** -2.5, 250); ax.set_ylim(0.8, 4000)
+    ax.xaxis.set_major_formatter(F); ax.yaxis.set_major_formatter(F)
+    ax.set_xlabel("Время обнаружения отказа $T_о$, с"); ax.set_ylabel("Простой обслуживания, с/год")
+    clean(ax, grid="both")
+    fig.savefig(OUT / "3_3_optimum.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
-    for f in (fig_1_2, fig_2_2, fig_2_3, fig_2_4, fig_2_5, fig_2_6, fig_3_2, fig_3_5):
+    for f in (fig_1_2, fig_2_2, fig_2_3, fig_2_4, fig_2_5, fig_2_6, fig_3_2, fig_3_3, fig_3_5):
         f()
         print("готово:", f.__name__)
