@@ -334,6 +334,39 @@
 **[67]** Ford D., Labelle F., Popovici F. I. [et al.] Availability in Globally Distributed Storage Systems // Proc. 9th USENIX Symposium on Operating Systems Design and Implementation (OSDI '10). — Vancouver : USENIX Association, 2010. — URL: https://www.usenix.org/legacy/event/osdi10/tech/full_papers/Ford.pdf
 *Выходные данные подтверждены при подготовке статьи 1. Табл. 2 источника: средняя наработка узла 4,3 мес., с учётом программных и аппаратных отказов и любой недоступности не менее 15 мин, включая плановые перезагрузки, — ≈ 2,8 события на узел в год, верхний край диапазона. Используется в разделе 3.1. ⚠️ Страницы в записи USENIX не указаны.*
 
+**[68]** Eisenbud D. E., Yi C., Contavalli C. [et al.] Maglev: A Fast and Reliable Software Network Load Balancer // Proc. 13th USENIX Symposium on Networked Systems Design and Implementation (NSDI '16). — USENIX Association, 2016. — P. 523–535.
+*Страницы — по странице публикации Google Research; текст сверен по PDF 07.11.2026 (разд. 3.3–3.4): при смене состава балансировщиков соединения попадают на экземпляры без записей таблицы соединений и при одновременной смене серверов обрываются; разделение состояния между экземплярами отвергнуто из соображений производительности, вместо него — согласованное хеширование. Используется в разделах 4.1, 4.3.*
+
+**[69]** Olteanu V., Agache A., Voinescu A., Raiciu C. Stateless Datacenter Load-balancing with Beamer // Proc. 15th USENIX Symposium on Networked Systems Design and Implementation (NSDI '18). — Renton : USENIX Association, 2018. — P. 125–139.
+*Сверено по PDF 07.11.2026: балансировщики без состояния на соединение; состояние, хранимое серверами, используется вместо таблицы балансировщика. Используется в разделах 4.1, 4.3.*
+
+**[70]** Kablan M., Alsudais A., Keller E., Le F. Stateless Network Functions: Breaking the Tight Coupling of State and Processing // Proc. 14th USENIX Symposium on Networked Systems Design and Implementation (NSDI '17). — Boston : USENIX Association, 2017. — P. 97–112.
+*Сверено по PDF 07.11.2026: обработка без состояния и отдельный слой хранения данных. Используется в разделе 4.3.*
+
+**[71]** Rajagopalan S., Williams D., Jamjoom H. Pico Replication: A High Availability Framework for Middleboxes // Proc. 4th ACM Symposium on Cloud Computing (SoCC '13). — Santa Clara : ACM, 2013. — DOI: 10.1145/2523616.2523635.
+*Сверено по PDF 07.11.2026: репликация на уровне потоков, частота снятия состояния до 1000 Гц. Страницы не установлены (в сборнике — номер статьи). Используется в разделе 4.3.*
+
+**[72]** Sherry J., Gao P. X., Basu S. [et al.] Rollback-Recovery for Middleboxes // Proc. ACM SIGCOMM 2015 Conference. — London : ACM, 2015. — P. 227–240. — DOI: 10.1145/2785956.2787501.
+*Сверено по PDF 07.11.2026: восстановление по журналу, записываемому при нормальной работе; требование восстановиться быстрее типичных предельных времён ожидания транспортного уровня. Используется в разделе 4.3.*
+
+**[73]** Gember-Jacobson A., Viswanathan R., Prakash C. [et al.] OpenNF: Enabling Innovation in Network Function Control // Proc. ACM SIGCOMM 2014 Conference. — Chicago : ACM, 2014. — P. 163–174. — DOI: 10.1145/2619239.2626313.
+*Выходные данные — по записи researchr и тексту статьи; содержание сверено по аннотации (плоскость управления переносом состояния функций между экземплярами). Используется в разделе 4.3.*
+
+**[74]** Paxson V., Allman M., Chu J., Sargent M. Computing TCP's Retransmission Timer: RFC 6298. — IETF, June 2011.
+*Сверено 07.11.2026: начальное значение и нижняя граница предельного времени повторной передачи — 1 с (п. 2.1, 2.4), удвоение при каждом истечении (п. 5.5). Используется в разделах 4.1, 4.3.*
+
+**[75]** Eddy W. (ed.) Transmission Control Protocol (TCP): RFC 9293. — IETF, August 2022.
+*Сверено 07.11.2026: сегмент, не принадлежащий существующему соединению, вызывает ответный сброс (п. 3.5.2). Используется в разделе 4.3.*
+
+**[76]** Kent S. IP Encapsulating Security Payload (ESP): RFC 4303. — IETF, December 2005.
+*Сверено 07.11.2026: порядковый номер увеличивается на единицу с каждым отправленным пакетом, при защите от повторов не должен повторяться (п. 2.2). Используется в разделах 4.1, 4.4.*
+
+**[77]** Singh R. (ed.), Kalyani G., Nir Y., Sheffer Y., Zhang D. Protocol Support for High Availability of IKEv2/IPsec: RFC 6311. — IETF, July 2011.
+*Сверено 07.11.2026: синхронизация состояния на каждом сообщении названа слишком затратной и выполняется периодически; после переключения счётчик исходящих пакетов увеличивается на «большое» значение (п. 1, 5.2). Используется в разделах 4.1, 4.4, 4.5.*
+
+**[78]** conntrackd.conf(5): configuration file for conntrackd daemon. — conntrack-tools 1.4.6. — URL: https://manpages.ubuntu.com/manpages/jammy/man5/conntrackd.conf.5.html
+*Сверено по выдержкам страницы 07.11.2026: режимы синхронизации NOTRACK (без гарантии доставки), ALARM и FTFW (надёжная доставка с отслеживанием сообщений), полная повторная синхронизация при запуске. Используется в разделе 4.3.*
+
 ## Проверено, но пока не процитировано
 
 **Fischer M. J., Lynch N. A., Paterson M.** Impossibility of Distributed Consensus with One Faulty Process // Journal of the ACM. — 1985. — Vol. 32, № 2. — P. 374–382. — DOI: 10.1145/3149.214121.
@@ -386,7 +419,7 @@
 
 ## Учёт
 
-Внесено провизорно: 67 ([66], [67] — 07.11.2026, раздел 3.1). Содержание сверено: 40 (у [38] — через вторичный источник; у [39], [42], [50], [51] — не сверено). Выходные данные подтверждены по CrossRef или DBLP: [4], [9], [11], [12], [18], [19], [20], [21], [22], [23], [28], [29], [30], [32], [33], [34], [35], [36], [37]. Прочитано целиком: 1 ([23]). Целевое число: 120–150.
+Внесено провизорно: 78 ([66], [67] — 07.11.2026, раздел 3.1; [68]–[78] — 07.11.2026, глава 4, все сверены по полным текстам или нормативным страницам, кроме оговорённых). Содержание сверено: 40 (у [38] — через вторичный источник; у [39], [42], [50], [51] — не сверено). Выходные данные подтверждены по CrossRef или DBLP: [4], [9], [11], [12], [18], [19], [20], [21], [22], [23], [28], [29], [30], [32], [33], [34], [35], [36], [37]. Прочитано целиком: 1 ([23]). Целевое число: 120–150.
 
 Прирост за 4 сентября 2026 г.: внесены [27]–[37], получено содержание [8] и [17]. Обзорные разделы обеспечены; глава 1 выросла с 22,3 до целевого объёма.
 

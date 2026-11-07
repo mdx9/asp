@@ -57,21 +57,27 @@ def q_exact(theta, d, m=2000):
 
 
 def check(theta, d, n=300):
+    """Доверительный интервал — по отказам: утраты при одном отказе зависимы (общая фаза)."""
     A = L = 0
+    r = []
     for _ in range(n):
         a, l = one_failure(theta, d)
         A += a
         L += l
+        r.append(l / a)
     q_sim = L / A
-    return q_sim, q_exact(theta, d), (theta / 2 + d) / T_C, A / n, L
+    m = sum(r) / n
+    sd = math.sqrt(sum((x - m) ** 2 for x in r) / (n - 1))
+    return q_sim, q_exact(theta, d), (theta / 2 + d) / T_C, A / n, L, 1.96 * sd / math.sqrt(n)
 
 
 if __name__ == "__main__":
     print(f"T_с = {T_C:.1f} с; активных на экземпляр λ_с·T_с = {LAM_C * T_C:.0f}")
     for theta, d in ((0.01, 0.0005), (1.0, 0.0005), (10.0, 0.0005), (60.0, 0.0005)):
-        q_sim, q_ex, q_lin, act, nl = check(theta, d)
-        print(f"θ = {theta:>6} с: q моделирование {q_sim:.3e} ({nl} событий), точная {q_ex:.3e} "
-              f"(расх. {abs(q_sim - q_ex) / q_ex * 100:4.1f} %), линейное прибл. {q_lin:.3e}")
+        q_sim, q_ex, q_lin, act, nl, ci = check(theta, d)
+        print(f"θ = {theta:>6} с: q моделирование {q_sim:.3e} ± {ci:.1e} ({nl} событий), точная {q_ex:.3e} "
+              f"(расх. {abs(q_sim - q_ex) / q_ex * 100:4.1f} %, в ДИ: {abs(q_sim - q_ex) <= ci}), "
+              f"линейное прибл. {q_lin:.3e}")
     lam = 1 / (365 * 86400)
     for theta in (0.01, 1.0):
         print(f"η(θ = {theta} с) = λ·T_с·q = {lam * T_C * q_exact(theta, 0.0005):.2e}")

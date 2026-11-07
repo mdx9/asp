@@ -1,4 +1,4 @@
-"""Рисунки 1.2, 2.2–2.6, 3.2, 3.3, 3.5, 3.6, 3.7 (рисунок 1.1 — 1_1_nfv_arch.dot, graphviz).
+"""Рисунки 1.2, 2.2–2.6, 3.2, 3.3, 3.5–3.7, 4.2, 4.3 (рисунок 1.1 — 1_1_nfv_arch.dot, graphviz).
 
 Запуск из корня репозитория: python3 thesis/figures/make_figures.py
 Палитра — категориальная, проверена validate_palette.js (синий, оранжевый, бирюзовый,
@@ -463,8 +463,74 @@ def fig_3_7():
     plt.close(fig)
 
 
+# ---------------------------------------------------------------- 4.2, 4.3
+def _ch4():
+    with contextlib.redirect_stdout(io.StringIO()):
+        return runpy.run_path(str(ROOT / "harness" / "ch4_model.py"))
+
+
+def fig_4_2():
+    """Последовательность событий при отказе экземпляра: без переноса состояния и с ним."""
+    fig, ax = plt.subplots(figsize=(10, 3.9))
+    x0 = 1e-3
+    rows = ((2.0, "без переноса\nсостояния"), (1.0, "с переносом\nсостояния"))
+    for y, _ in rows:
+        ax.barh(y, 0.025 - x0, left=x0, height=0.42, color=C[0])
+        ax.barh(y, 0.0016, left=0.025, height=0.42, color=C[1])
+    ax.barh(2.0, 1.0, left=0.0266, height=0.42, color=C[4], hatch="//", ec="white")
+    ax.text(0.16, 2.3, "повторное установление оборванных соединений, $T_у$ (доля q = 1)",
+            ha="left", va="bottom", color=INK2, fontsize=9)
+    ax.barh(1.0, 0.01, left=0.0266, height=0.18, color=C[2])
+    ax.text(0.04, 0.72, "доля утраченных q(θ) ≈ 4,5·$10^{-5}$ при θ = 10 мс", ha="left", va="top",
+            color=INK2, fontsize=9)
+    ax.text(0.005, 2.3, "$T_о$ = 25 мс", ha="center", va="bottom", color=INK2, fontsize=9)
+    ax.text(0.03, 1.28, "$T_р$ = 1,6 мс", ha="left", va="bottom", color=INK2, fontsize=9)
+    ax.text(2.2, 2.0, "перерыв\n≈ 1,03 с", va="center", fontsize=12, fontweight="bold")
+    ax.text(2.2, 1.0, "перерыв\n≈ 0,027 с", va="center", fontsize=12, fontweight="bold")
+    ax.set_yticks([y for y, _ in rows], [t for _, t in rows])
+    ax.set_xscale("log")
+    ax.set_xlim(x0, 8)
+    ax.set_ylim(0.4, 2.75)
+    ax.xaxis.set_major_formatter(F)
+    ax.set_xlabel("Время с момента отказа, с (логарифмическая шкала)")
+    clean(ax)
+    ax.spines["left"].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    fig.savefig(OUT / "4_2_timeline.png")
+    plt.close(fig)
+
+
+def fig_4_3():
+    """Доля утраченных соединений и загрузка процессора от периода синхронизации."""
+    g = _ch4()
+    th = [10 ** (-4 + 5 * i / 300) for i in range(301)]
+    fig, ax = plt.subplots(figsize=(8.6, 4.8))
+    ax.plot(th, [g["q"](t, m=600) for t in th], color=C[0], lw=2.2, label="доля утраченных q(θ) по (4.1)")
+    ax.plot(th, [g["q_lin"](t) for t in th], color=C[0], lw=1.2, ls=":", label="приближение малого окна (4.2)")
+    ax.plot(th, [g["U"](t) for t in th], color=C[1], lw=2.2, ls="--", label="загрузка процессора U(θ) по (4.8)")
+    ax.axhline(1e-4, color=C[0], lw=0.8, ls="-.")
+    ax.text(1.2e-4, 1.25e-4, "$q_{доп}$ = $10^{-4}$", color=C[0], fontsize=9)
+    ax.axhline(g["U_MAX"], color=C[1], lw=0.8, ls="-.")
+    ax.text(1.2e-4, 1.25e-2, "$U_{доп}$ = 1 %", color=C[1], fontsize=9)
+    ts = g["theta_star"](1e-4)
+    ax.axvspan(max(g["theta_U"](), g["THETA_MIN"]), ts, color=C[2], alpha=0.15, lw=0)
+    ax.plot([ts], [1e-4], "s", color=C[2], ms=9, mec="white", label=f"θ* = {ts * 1e3:.1f} мс — граница по $q_{{доп}}$".replace(".", ","))
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(1e-4, 10)
+    ax.set_ylim(1e-6, 1)
+    ax.xaxis.set_major_formatter(F)
+    ax.yaxis.set_major_formatter(F)
+    ax.set_xlabel("Период синхронизации θ, с")
+    ax.set_ylabel("Доля")
+    ax.legend(loc="lower right", fontsize=9)
+    clean(ax, grid="both")
+    fig.savefig(OUT / "4_3_sync_period.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     for f in (fig_1_2, fig_2_2, fig_2_3, fig_2_4, fig_2_5, fig_2_6, fig_3_2, fig_3_3, fig_3_5,
-              fig_3_6, fig_3_7):
+              fig_3_6, fig_3_7, fig_4_2, fig_4_3):
         f()
         print("готово:", f.__name__)
