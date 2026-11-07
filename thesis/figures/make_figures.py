@@ -1,4 +1,4 @@
-"""Рисунки 1.2, 2.2–2.6, 3.2, 3.3, 3.5–3.7, 4.2, 4.3 (рисунок 1.1 — 1_1_nfv_arch.dot, graphviz).
+"""Рисунки 1.2, 2.2–2.6, 3.2, 3.3, 3.5–3.7, 4.2–4.5 (рисунок 1.1 — 1_1_nfv_arch.dot, graphviz).
 
 Запуск из корня репозитория: python3 thesis/figures/make_figures.py
 Палитра — категориальная, проверена validate_palette.js (синий, оранжевый, бирюзовый,
@@ -500,14 +500,73 @@ def fig_4_2():
     plt.close(fig)
 
 
+def fig_4_4():
+    """Карта реализуемости асинхронной синхронизации по средней длительности и темпу установления соединений."""
+    import numpy as np
+    g = _ch4()
+    lam = np.logspace(1, math.log10(2.5e4), 400)
+    fig, ax = plt.subplots(figsize=(8.6, 4.8))
+    styles = ((1e-4, C[0], "-"), (1e-5, C[1], "--"))
+    keep = g["LAM_C"]
+    for qd, col, ls in styles:
+        tc_min = []
+        for lc in lam:
+            den = g["U_MAX"] - 2 * lc * (g["C_REC"] + g["C_MSG"] * g["E_REC"] / g["M_PAY"])
+            thu = g["C_MSG"] / den if den > 0 else float("inf")
+            lb = max(g["THETA_MIN"], thu)
+            tc_min.append((g["D"] + lb / 2) / qd if math.isfinite(lb) else float("nan"))
+        ax.plot(lam, tc_min, color=col, lw=2.2, ls=ls, label=f"граница при $q_{{доп}}$ = {qd:.0e}".replace("e-0", "·10$^{-") + "}$")
+    lmax = g["U_MAX"] / (2 * (g["C_REC"] + g["C_MSG"] * g["E_REC"] / g["M_PAY"]))
+    ax.axvline(lmax, color=INK2, lw=1, ls=":")
+    ax.text(lmax * 0.93, 3, "предел (4.13)", rotation=90, ha="right", va="bottom", color=INK2, fontsize=9)
+    ax.plot([100], [g["T_C"]], "s", color=C[2], ms=9, mec="white", label="параметры таблицы 4.2")
+    ax.text(130, g["T_C"] * 1.15, "реализуемо выше границы", color=INK2, fontsize=9)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(10, 2.5e4)
+    ax.set_ylim(1, 1e3)
+    ax.xaxis.set_major_formatter(F)
+    ax.yaxis.set_major_formatter(F)
+    ax.set_xlabel("Темп установления соединений на экземпляр λ$_с$, 1/с")
+    ax.set_ylabel("Средняя длительность соединения $T_с$, с")
+    ax.legend(loc="upper left", fontsize=9)
+    clean(ax, grid="both")
+    fig.savefig(OUT / "4_4_feasibility.png")
+    plt.close(fig)
+
+
+def fig_4_5():
+    """Полуширина доверительного интервала доли утраченных от числа отказов, (4.16)."""
+    g = _ch4()
+    fig, ax = plt.subplots(figsize=(8, 4.4))
+    ns = list(range(5, 301))
+    sim = {0.01: 0.50, 0.1: 0.27, 1.0: 0.19}
+    for (th, lab), col, ls in zip(((0.01, "θ = 10 мс"), (0.1, "θ = 0,1 с"), (1.0, "θ = 1 с")), C, ("-", "--", "-.")):
+        em, vm = g["loss_moments"](th, m=800)
+        ax.plot(ns, [1.96 * math.sqrt((em + vm) / n) / em for n in ns], color=col, lw=2, ls=ls, label=lab)
+        ax.plot([30], [sim[th]], "o", color=col, ms=7, mec="white")
+    ax.axhline(0.2, color=INK2, lw=0.8, ls=":")
+    ax.text(290, 0.21, "δ = 0,2", ha="right", color=INK2, fontsize=9)
+    ax.set_yscale("log")
+    ax.set_xlim(0, 300)
+    ax.set_ylim(0.05, 3)
+    ax.yaxis.set_major_formatter(F)
+    ax.set_xlabel("Число отказов n")
+    ax.set_ylabel("Относительная полуширина интервала")
+    ax.legend(loc="upper right", fontsize=9)
+    clean(ax, grid="both")
+    fig.savefig(OUT / "4_5_reps.png")
+    plt.close(fig)
+
+
 def fig_4_3():
     """Доля утраченных соединений и загрузка процессора от периода синхронизации."""
     g = _ch4()
     th = [10 ** (-4 + 5 * i / 300) for i in range(301)]
     fig, ax = plt.subplots(figsize=(8.6, 4.8))
-    ax.plot(th, [g["q"](t, m=600) for t in th], color=C[0], lw=2.2, label="доля утраченных q(θ) по (4.1)")
-    ax.plot(th, [g["q_lin"](t) for t in th], color=C[0], lw=1.2, ls=":", label="приближение малого окна (4.2)")
-    ax.plot(th, [g["U"](t) for t in th], color=C[1], lw=2.2, ls="--", label="загрузка процессора U(θ) по (4.8)")
+    ax.plot(th, [g["q"](t, m=600) for t in th], color=C[0], lw=2.2, label="доля утраченных q(θ) по (4.2)")
+    ax.plot(th, [g["q_lin"](t) for t in th], color=C[0], lw=1.2, ls=":", label="оценка сверху (4.3)")
+    ax.plot(th, [g["U"](t) for t in th], color=C[1], lw=2.2, ls="--", label="загрузка процессора U(θ) по (4.10)")
     ax.axhline(1e-4, color=C[0], lw=0.8, ls="-.")
     ax.text(1.2e-4, 1.25e-4, "$q_{доп}$ = $10^{-4}$", color=C[0], fontsize=9)
     ax.axhline(g["U_MAX"], color=C[1], lw=0.8, ls="-.")
@@ -531,6 +590,6 @@ def fig_4_3():
 
 if __name__ == "__main__":
     for f in (fig_1_2, fig_2_2, fig_2_3, fig_2_4, fig_2_5, fig_2_6, fig_3_2, fig_3_3, fig_3_5,
-              fig_3_6, fig_3_7, fig_4_2, fig_4_3):
+              fig_3_6, fig_3_7, fig_4_2, fig_4_3, fig_4_4, fig_4_5):
         f()
         print("готово:", f.__name__)
