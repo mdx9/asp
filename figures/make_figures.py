@@ -222,7 +222,7 @@ def fig_2_5():
         else:
             m = float(np.median(x))
             xs = np.sort(x)
-            lo, hi = xs[9], xs[19]   # порядковые статистики 10 и 20 при n = 30, P = 0,957
+            lo, hi = xs[9], xs[20]   # порядковые статистики 10 и 21 при n = 30, P = 0,957
         ax.axvspan(lo, hi, color=col, alpha=0.15, lw=0)
         ax.axvline(m, color=INK, lw=1.4)
         ax.set_title(name, fontsize=10, loc="left")
