@@ -14,8 +14,8 @@
    «Подпись-таблицы», чтобы форматировать их по ГОСТ разом, а не поштучно.
 
 Использование:
-    python3 build-docx.py 05-chapter3.md
-    python3 build-docx.py 05-chapter3.md --reference gost.docx
+    python3 tools/build-docx.py thesis/chapter3.md
+    python3 tools/build-docx.py thesis/chapter3.md --reference gost.docx
 """
 import argparse
 import pathlib
@@ -64,7 +64,7 @@ def preprocess(md: str) -> tuple[str, dict]:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("source", help="файл главы, например 05-chapter3.md")
+    ap.add_argument("source", help="файл главы, например thesis/chapter3.md")
     ap.add_argument("-o", "--output", help="имя docx (по умолчанию — по имени главы)")
     ap.add_argument("--reference", help="reference.docx со стилями по ГОСТ")
     a = ap.parse_args()

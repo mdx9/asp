@@ -1,11 +1,11 @@
-"""Рисунки 1.2, 2.2, 2.3, 2.4, 2.5, 2.6, 3.2, 3.3, 3.5 (рисунок 1.1 — 1_1_nfv_arch.dot, graphviz).
+"""Рисунки 1.2, 2.2–2.6, 3.2, 3.3, 3.5–3.7, 4.2–4.5 (рисунок 1.1 — 1_1_nfv_arch.dot, graphviz).
 
-Запуск из корня репозитория: python3 figures/make_figures.py
+Запуск из корня репозитория: python3 thesis/figures/make_figures.py
 Палитра — категориальная, проверена validate_palette.js (синий, оранжевый, бирюзовый,
 жёлтый, розовый); серии различаются также типом линии, маркером или штриховкой.
 Данные: 1.2, 3.5 — параметры платформы (таблица 1.3, (1.3)); 2.3 — (3.17) при k = 5,
 τ = 26 мс (таблица 2.4); 2.5 — harness/e1_example.py (ДАННЫЕ ПОРОЖДЕНЫ); 2.6 — таблица 2.9;
-3.2 — (3.7), (3.11) при Tн = 1 год, Tп = 300 с (таблица 3.2).
+3.2 — (3.7), (3.11) при Tн = 1 год, Tп = 300 с (таблица 3.2); 3.6, 3.7 — harness/synth.py (ДАННЫЕ ПОРОЖДЕНЫ).
 """
 import contextlib
 import io
@@ -19,8 +19,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 from matplotlib.ticker import FuncFormatter
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
-OUT = ROOT / "figures"
+ROOT = pathlib.Path(__file__).resolve().parents[2]   # корень репозитория
+OUT = pathlib.Path(__file__).resolve().parent
 C = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"]
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10, "axes.edgecolor": INK2,
@@ -69,7 +69,7 @@ def fig_1_2():
                        (To + wait, "вытеснение\nэкземпляров", "center")):
         ax.axvline(x, color=INK2, lw=0.6, ls=":", ymin=0.12)
         ax.text(x, 1.95, lab, ha=ha, va="bottom", fontsize=8.5, color=INK)
-    ax.text(380, 1, "≈ 350 с", ha="left", va="center", fontsize=11, fontweight="bold", color=INK)
+    ax.text(380, 1, "≈ 347,5 с\n+ запуск", ha="left", va="center", fontsize=11, fontweight="bold", color=INK)
     # публикации сведений об узле (период 10 с) до отказа
     for t in range(-30, 1, 10):
         ax.plot(t - 4, 0.15, marker="|", ms=9, color=C[0])
@@ -328,12 +328,12 @@ def fig_3_5():
     ax.barh(1, 0.119 - x0, left=x0, height=0.5, color=C[0])
     ax.barh(1, 1.0, left=0.119, height=0.5, color=C[1])
     ax.text(0.04, 1.33, "обнаружение 0,119 с", ha="center", va="bottom", color=INK2, fontweight="bold")
-    ax.text(0.35, 0.67, "перенаправление 1 с", ha="center", va="top", color=INK2, fontweight="bold")
+    ax.text(0.35, 0.67, "перенаправление 1 с (иллюстр.)", ha="center", va="top", color=INK2, fontweight="bold")
     ax.text(1200, 1, "1,12 с", va="center", fontsize=13, fontweight="bold")
     ax.barh(0.1, 300, left=1.119, height=0.32, color=C[2])
     ax.text(18, -0.18, "переразмещение — вне критического пути", ha="center", va="top", color=INK2,
             fontweight="bold")
-    ax.set_yticks([2, 1], ["штатный\nмеханизм", "предлагаемый\nметод"])
+    ax.set_yticks([2, 1], ["штатный механизм,\nодиночная\nконфигурация", "предлагаемый\nметод,\nрезервирование"])
     ax.set_xscale("log")
     ax.set_xlim(x0, 9000)
     ax.set_ylim(-0.6, 2.7)
@@ -348,7 +348,7 @@ def fig_3_5():
 
 # ---------------------------------------------------------------- 3.3
 def fig_3_3():
-    YEAR = 365.25 * 86400
+    YEAR = 365 * 86400   # как в тексте главы 3
     lam, p, c, Tr, tmin = 1 / YEAR, 0.01, 1.0, 1.0, 0.010
     ramp = {2: "#b7d3f6", 3: "#86b6ef", 4: "#5598e7", 5: "#2a78d6", 6: "#184f95"}
     To = [10 ** (-2.5 + 5 * i / 500) for i in range(501)]
@@ -389,7 +389,207 @@ def fig_3_3():
     plt.close(fig)
 
 
+# ---------------------------------------------------------------- 3.6, 3.7
+def _synth():
+    with contextlib.redirect_stdout(io.StringIO()):
+        return runpy.run_path(str(ROOT / "harness" / "synth.py"))
+
+
+def fig_3_6():
+    g = _synth()
+    tau, k = g["TAU_MS"], g["K"]
+    x = g["table36"][0]["raw"]          # остановка процесса, n = 30
+    m, e = sum(x) / len(x), g["ci95"](x)
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.hist(x, bins=[104 + 1.5 * i for i in range(20)], color=C[0], ec="white", lw=1.2)
+    ax.axvspan(m - e, m + e, color=C[1], alpha=0.18, lw=0)
+    for v in ((k - 1) * tau, k * tau):
+        ax.axvline(v, color=INK, ls=(0, (5, 4)), lw=1.6)
+    ax.axvline((k - 0.5) * tau, color=C[1], lw=2.2)
+    ax.axvline(m, color=C[1], ls=(0, (5, 4)), lw=2.2)
+    top = ax.get_ylim()[1] * 1.6
+    ax.set_ylim(0, top)
+    f1 = lambda v: f"{v:.0f}"
+    ax.text((k - 1) * tau + 1, top * 0.9, f"$(k-1)τ$ = {f1((k - 1) * tau)} мс", color=INK)
+    ax.text(k * tau - 1, top * 0.9, f"$kτ$ = {f1(k * tau)} мс", color=INK, ha="right")
+    ax.text((k - 0.5) * tau - 0.4, top * 0.74, "расчёт $(k-\\frac{1}{2})τ$ = " + f"{(k - 0.5) * tau:.1f}".replace(".", ",") + " мс",
+            color=C[1], ha="right", fontweight="bold")
+    ax.text(m + e + 0.4, top * 0.55, f"среднее\n{m:.1f} ± {e:.1f} мс".replace(".", ","), color=C[1], fontweight="bold")
+    ax.set_xlabel("Время обнаружения отказа, мс")
+    ax.set_ylabel("Число повторностей")
+    clean(ax, grid="y")
+    fig.savefig(OUT / "3_6_detect_hist.png")
+    plt.close(fig)
+
+
+def fig_3_7():
+    g = _synth()
+    from scipy import stats
+    t37, k, tau = g["table37"], g["K"], g["TAU_MS"] / 1000
+    slope, mx, my = g["SLOPE"], g["_mx"], g["_my"]
+    fig, ax = plt.subplots(figsize=(9, 5.4))
+    ps = [0.008 * (0.4 / 0.008) ** (i / 200) for i in range(201)]
+    ax.plot(ps, [(1 - p) * p ** k / tau for p in ps], color=C[1], ls=(0, (6, 3)), lw=2.4,
+            label=f"расчёт по (3.18) при $k$ = {k}")
+    ax.plot(ps, [math.exp(my + slope * (math.log(p) - mx)) for p in ps], color=C[0], lw=2,
+            label=f"аппроксимация, наклон {slope:.2f}".replace(".", ","))
+    for r in t37:
+        n, T = r["n_fp"], r["hours"] * 3600
+        lo = stats.chi2.ppf(0.025, 2 * n) / 2 / T if n else 0
+        hi = stats.chi2.ppf(0.975, 2 * n + 2) / 2 / T
+        ax.errorbar(r["p"], r["nu_meas_s"], yerr=[[r["nu_meas_s"] - lo], [hi - r["nu_meas_s"]]],
+                    fmt="o", ms=8, color=C[0], mec="white", mew=1.2, capsize=5, lw=1.6)
+    ax.plot([], [], "o", color=C[0], label="модельные «измерения» с пуассоновскими границами")
+    nu_ex = math.exp(my + slope * (math.log(0.01) - mx))
+    nu_c = (1 - 0.01) * 0.01 ** k / tau
+    ax.plot([0.01], [nu_ex], "s", color=C[0], ms=8, mec="white")
+    ax.plot([0.01], [nu_c], "D", color=C[1], ms=7, mec="white")
+    ax.annotate(f"$p$ = 0,01: экстраполяция {g['NU_EXTRAP']:.3f}".replace(".", ",") +
+                f", расчёт {g['NU_OPER']:.3f} события в год".replace(".", ","),
+                xy=(0.0105, nu_ex), xytext=(0.016, 3e-8), color=INK, fontsize=10,
+                arrowprops=dict(arrowstyle="-", color=INK2, lw=1))
+    ax.axvline(0.01, color=INK2, lw=0.8, ls=":")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(0.008, 0.4)
+    ax.set_ylim(1e-9, 0.3)
+    ax.xaxis.set_major_formatter(F)
+    ax.yaxis.set_major_formatter(F)
+    ax.set_xlabel("Вероятность непринятия контрольного сообщения $p$")
+    ax.set_ylabel("Интенсивность ложных признаний отказа, с$^{-1}$")
+    ax.legend(loc="upper left", fontsize=9)
+    clean(ax, grid="both")
+    fig.savefig(OUT / "3_7_false_positive.png")
+    plt.close(fig)
+
+
+# ---------------------------------------------------------------- 4.2, 4.3
+def _ch4():
+    with contextlib.redirect_stdout(io.StringIO()):
+        return runpy.run_path(str(ROOT / "harness" / "ch4_model.py"))
+
+
+def fig_4_2():
+    """Последовательность событий при отказе экземпляра: без переноса состояния и с ним."""
+    fig, ax = plt.subplots(figsize=(10, 3.9))
+    x0 = 1e-3
+    rows = ((2.0, "без переноса\nсостояния"), (1.0, "с переносом\nсостояния"))
+    for y, _ in rows:
+        ax.barh(y, 0.025 - x0, left=x0, height=0.42, color=C[0])
+        ax.barh(y, 0.0016, left=0.025, height=0.42, color=C[1])
+    ax.barh(2.0, 1.0, left=0.0266, height=0.42, color=C[4], hatch="//", ec="white")
+    ax.text(0.16, 2.3, "повторное установление оборванных соединений, $T_у$ (доля q = 1)",
+            ha="left", va="bottom", color=INK2, fontsize=9)
+    ax.barh(1.0, 0.01, left=0.0266, height=0.18, color=C[2])
+    ax.text(0.04, 0.72, "доля утраченных q(θ) ≈ 4,5·$10^{-5}$ при θ = 10 мс", ha="left", va="top",
+            color=INK2, fontsize=9)
+    ax.text(0.005, 2.3, "$T_о$ = 25 мс", ha="center", va="bottom", color=INK2, fontsize=9)
+    ax.text(0.03, 1.28, "$T_р$ = 1,6 мс", ha="left", va="bottom", color=INK2, fontsize=9)
+    ax.text(2.2, 2.0, "перерыв\n≈ 1,03 с", va="center", fontsize=12, fontweight="bold")
+    ax.text(2.2, 1.0, "перерыв\n≈ 0,027 с", va="center", fontsize=12, fontweight="bold")
+    ax.set_yticks([y for y, _ in rows], [t for _, t in rows])
+    ax.set_xscale("log")
+    ax.set_xlim(x0, 8)
+    ax.set_ylim(0.4, 2.75)
+    ax.xaxis.set_major_formatter(F)
+    ax.set_xlabel("Время с момента отказа, с (логарифмическая шкала)")
+    clean(ax)
+    ax.spines["left"].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    fig.savefig(OUT / "4_2_timeline.png")
+    plt.close(fig)
+
+
+def fig_4_4():
+    """Карта реализуемости асинхронной синхронизации по средней длительности и темпу установления соединений."""
+    import numpy as np
+    g = _ch4()
+    lam = np.logspace(1, math.log10(2.5e4), 400)
+    fig, ax = plt.subplots(figsize=(8.6, 4.8))
+    styles = ((1e-4, C[0], "-"), (1e-5, C[1], "--"))
+    keep = g["LAM_C"]
+    for qd, col, ls in styles:
+        tc_min = []
+        for lc in lam:
+            den = g["U_MAX"] - 2 * lc * (g["C_REC"] + g["C_MSG"] * g["E_REC"] / g["M_PAY"])
+            thu = g["C_MSG"] / den if den > 0 else float("inf")
+            lb = max(g["THETA_MIN"], thu)
+            tc_min.append((g["D"] + lb / 2) / qd if math.isfinite(lb) else float("nan"))
+        ax.plot(lam, tc_min, color=col, lw=2.2, ls=ls, label=f"граница при $q_{{доп}}$ = {qd:.0e}".replace("e-0", "·10$^{-") + "}$")
+    lmax = g["U_MAX"] / (2 * (g["C_REC"] + g["C_MSG"] * g["E_REC"] / g["M_PAY"]))
+    ax.axvline(lmax, color=INK2, lw=1, ls=":")
+    ax.text(lmax * 0.93, 3, "предел (4.13)", rotation=90, ha="right", va="bottom", color=INK2, fontsize=9)
+    ax.plot([100], [g["T_C"]], "s", color=C[2], ms=9, mec="white", label="параметры таблицы 4.2")
+    ax.text(130, g["T_C"] * 1.15, "реализуемо выше границы", color=INK2, fontsize=9)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(10, 2.5e4)
+    ax.set_ylim(1, 1e3)
+    ax.xaxis.set_major_formatter(F)
+    ax.yaxis.set_major_formatter(F)
+    ax.set_xlabel("Темп установления соединений на экземпляр λ$_с$, 1/с")
+    ax.set_ylabel("Средняя длительность соединения $T_с$, с")
+    ax.legend(loc="upper left", fontsize=9)
+    clean(ax, grid="both")
+    fig.savefig(OUT / "4_4_feasibility.png")
+    plt.close(fig)
+
+
+def fig_4_5():
+    """Полуширина доверительного интервала доли утраченных от числа отказов, (4.16)."""
+    g = _ch4()
+    fig, ax = plt.subplots(figsize=(8, 4.4))
+    ns = list(range(5, 301))
+    sim = {0.01: 0.50, 0.1: 0.27, 1.0: 0.19}
+    for (th, lab), col, ls in zip(((0.01, "θ = 10 мс"), (0.1, "θ = 0,1 с"), (1.0, "θ = 1 с")), C, ("-", "--", "-.")):
+        em, vm = g["loss_moments"](th, m=800)
+        ax.plot(ns, [1.96 * math.sqrt((em + vm) / n) / em for n in ns], color=col, lw=2, ls=ls, label=lab)
+        ax.plot([30], [sim[th]], "o", color=col, ms=7, mec="white")
+    ax.axhline(0.2, color=INK2, lw=0.8, ls=":")
+    ax.text(290, 0.21, "δ = 0,2", ha="right", color=INK2, fontsize=9)
+    ax.set_yscale("log")
+    ax.set_xlim(0, 300)
+    ax.set_ylim(0.05, 3)
+    ax.yaxis.set_major_formatter(F)
+    ax.set_xlabel("Число отказов n")
+    ax.set_ylabel("Относительная полуширина интервала")
+    ax.legend(loc="upper right", fontsize=9)
+    clean(ax, grid="both")
+    fig.savefig(OUT / "4_5_reps.png")
+    plt.close(fig)
+
+
+def fig_4_3():
+    """Доля утраченных соединений и загрузка процессора от периода синхронизации."""
+    g = _ch4()
+    th = [10 ** (-4 + 5 * i / 300) for i in range(301)]
+    fig, ax = plt.subplots(figsize=(8.6, 4.8))
+    ax.plot(th, [g["q"](t, m=600) for t in th], color=C[0], lw=2.2, label="доля утраченных q(θ) по (4.2)")
+    ax.plot(th, [g["q_lin"](t) for t in th], color=C[0], lw=1.2, ls=":", label="оценка сверху (4.3)")
+    ax.plot(th, [g["U"](t) for t in th], color=C[1], lw=2.2, ls="--", label="загрузка процессора U(θ) по (4.10)")
+    ax.axhline(1e-4, color=C[0], lw=0.8, ls="-.")
+    ax.text(1.2e-4, 1.25e-4, "$q_{доп}$ = $10^{-4}$", color=C[0], fontsize=9)
+    ax.axhline(g["U_MAX"], color=C[1], lw=0.8, ls="-.")
+    ax.text(1.2e-4, 1.25e-2, "$U_{доп}$ = 1 %", color=C[1], fontsize=9)
+    ts = g["theta_star"](1e-4)
+    ax.axvspan(max(g["theta_U"](), g["THETA_MIN"]), ts, color=C[2], alpha=0.15, lw=0)
+    ax.plot([ts], [1e-4], "s", color=C[2], ms=9, mec="white", label=f"θ* = {ts * 1e3:.1f} мс — граница по $q_{{доп}}$".replace(".", ","))
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(1e-4, 10)
+    ax.set_ylim(1e-6, 1)
+    ax.xaxis.set_major_formatter(F)
+    ax.yaxis.set_major_formatter(F)
+    ax.set_xlabel("Период синхронизации θ, с")
+    ax.set_ylabel("Доля")
+    ax.legend(loc="lower right", fontsize=9)
+    clean(ax, grid="both")
+    fig.savefig(OUT / "4_3_sync_period.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
-    for f in (fig_1_2, fig_2_2, fig_2_3, fig_2_4, fig_2_5, fig_2_6, fig_3_2, fig_3_3, fig_3_5):
+    for f in (fig_1_2, fig_2_2, fig_2_3, fig_2_4, fig_2_5, fig_2_6, fig_3_2, fig_3_3, fig_3_5,
+              fig_3_6, fig_3_7, fig_4_2, fig_4_3, fig_4_4, fig_4_5):
         f()
         print("готово:", f.__name__)
